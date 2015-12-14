@@ -153,52 +153,54 @@ for solution_size in range(1,14):
         print (str(solution_size) + "\t" + str(population_size) + "\t" + str(j))
 
 
-
 #differential evolution algorithm
-for solution_size in range(1,10):
-    solution = prepare_solution(solution_size)
-	#differential weight [0,2]
-    F=1
-	#crossover probability [0,1]
-    CR=0.5
-    #IMPORTANT population min size needs to be 4 agents
-    for population_size in range(4,10):
-        population = [Phenotype(solution_size) for x in range(population_size)]
-        j = 0
-        l = 0
-        while 1:
-            for j in range(population_size):
-                x = random.randint(0,population_size - 1)
-                a = x
-                b = x
-                c = x
-                while a == x:
-                    a = random.randint(0,population_size - 1)
-                while b == x or b == a:
-                    b = random.randint(0,population_size-1)
-                while c == x or c == a or c == b:
-                    c = random.randint(0,population_size-1)
-                R = random.randint(0, solution_size)
-                candidate = Phenotype(None, population[x].get_genotype())
-                for k in range(solution_size):
-                    if random.randint(0, solution_size - 1) == R or random.random() < CR:
-                        candidate.set_bit(k, population[a].get_bit(k) + F*(population[b].get_bit(k)-population[c].get_bit(k)))
-                population[x].calc_fitness_function(solution['s'], solution['i'])
-                candidate.calc_fitness_function(solution['s'], solution['i'])
-                if candidate.get_fitness() == 0:
-                    break
-                if candidate.get_fitness() > population[x].get_fitness():
-                    del population[x]
-                    population.append(candidate)
-            l += 1
-            best_solution = population[0]
-            for c in population[1:]:
-                if c.get_fitness() < best_solution.get_fitness():
-                    best_solution = c
+def differential_evolution_algorith():
+    for solution_size in range(1,20):
+        solution = prepare_solution(solution_size)
+        #differential weight [0,2]
+        F=1
+        #crossover probability [0,1]
+        CR=0.5
+        #IMPORTANT population min size needs to be 4 agents
+        for population_size in range(4,20):
+            population = [Phenotype(solution_size) for x in range(population_size)]
+            v = 0
+            for l in range(100):
+                v += 1
+                for j in range(population_size):
+                    x = random.randint(0,population_size - 1)
+                    a = x
+                    b = x
+                    c = x
+                    while a == x:
+                        a = random.randint(0,population_size - 1)
+                    while b == x or b == a:
+                        b = random.randint(0,population_size-1)
+                    while c == x or c == a or c == b:
+                        c = random.randint(0,population_size-1)
+                    R = random.randint(0, solution_size - 1)
+                    candidate = Phenotype(None, population[x].get_genotype())
+                    for k in range(solution_size):
+                        if random.randint(0, solution_size - 1) == R or random.random() < CR:
+                            candidate.set_bit(k, population[a].get_bit(k) + F*(population[b].get_bit(k)-population[c].get_bit(k)))
+                    population[x].calc_fitness_function(solution['s'], solution['i'])
+                    candidate.calc_fitness_function(solution['s'], solution['i'])
+                    if candidate.get_fitness() == 0:
+                        break
+                    if candidate.get_fitness() > population[x].get_fitness():
+                        del population[x]
+                        population.append(candidate)
+                best_solution = population[0]
+                for c in population[1:]:
+                    c.calc_fitness_function(solution['s'], solution['i'])
+                    if c.get_fitness() < best_solution.get_fitness():
+                        best_solution = c
 
-            #if c is valid solution
-            if best_solution.get_fitness() == 0:
-                print (str(solution_size) + "\t" + str(population_size) + "\t" + str(l))
-                break
-            #else:
-                #print (str(solution_size) + "\t" + str(population_size) + "\t" + str(l) + "\t" + str(best_solution))
+                #if c is valid solution
+                if best_solution.get_fitness() == 0:
+                    print (str(solution_size) + "\t" + str(population_size) + "\t" + str(v))
+                    break
+                #else:
+                    #print (str(solution_size) + "\t" + str(population_size) + "\t" + str(l) + "\t" + str(best_solution))
+
+differential_evolution_algorith()
