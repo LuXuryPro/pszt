@@ -2,11 +2,12 @@
 # -*- coding: utf-8 -*-
 
 import random
+#Python debugger
 import pdb
 
 def prepare_solution(genotype_size):
-    """ Prepare example solution of size genotype_size
-    return dict having desired sum and product
+    """ Prepare example solution of size genotype_size. Return dict having desired sum and product, which we use as
+    a model we want to achieve.
     """
     genotype = [random.randint(0,1) for x in range(genotype_size)]
     s = 0
@@ -25,7 +26,10 @@ def prepare_solution(genotype_size):
     return d
 
 class Phenotype:
+    """
+    """
     def __init__(self, size = None, genotype = None):
+        """If you specify only size it will automatically generate random solution."""
         if genotype:
             self.genotype = genotype
         else:
@@ -51,25 +55,31 @@ class Phenotype:
     def get_influence(self):
         return self.influence
     def calc_influence(self, s, maximum, i):
+        """Instead of killing agent with the lowest fittest we use this formula. It is improving speed of finding the best solution"""
         self.influence = ( maximum - self.fitness + 1 )/( i*( maximum + 1 ) - s )
     def mutation(self):
+        """Flip a bit on a random position. """
         position = random.randint(0,len(self.genotype) - 1)
         self.genotype[position] ^= 1 #flip bit
     def crossover(self, other):
+        """Select a random index in genotype. Child A gets all bits before it, from self genotype and the rest from other.
+        Child B vice versa."""
         position = random.randint( 0, len( self.genotype ) - 1 )
-        childeren_a = []
-        childeren_b = []
+        children_a = []
+        children_b = []
         for x in range(len(self.genotype)):
             if x < position:
-                childeren_a.append(self.genotype[x])
-                childeren_b.append(other.genotype[x])
+                children_a.append(self.genotype[x])
+                children_b.append(other.genotype[x])
             else:
-                childeren_b.append(self.genotype[x])
-                childeren_a.append(other.genotype[x])
+                children_b.append(self.genotype[x])
+                children_a.append(other.genotype[x])
 
-        return {'a': Phenotype(0, childeren_a), 'b': Phenotype(0, childeren_b)}
+        return {'a': Phenotype(0, children_a), 'b': Phenotype(0, children_b)}
 
     def calc_fitness_function(self, solution_sum, solution_product):
+        """For given parameters calculates how close are we from the best solution.
+        If this function returns 0 we found it"""
         s = 0
         i = 0
         for x in range(len(self.genotype)):
@@ -84,9 +94,11 @@ class Phenotype:
 
 #normal algorithm
 for solution_size in range(1,14):
+    #TODO: zrobic parser argumentow
     solution = prepare_solution(solution_size)
     #print ("Solution: " + str(solution))
     for population_size in range(2,51):
+        #TODO: zrobic parser argumentow
         population = [Phenotype(solution_size) for x in range(population_size)]
         j = 0
         while 1:
@@ -96,6 +108,7 @@ for solution_size in range(1,14):
             s = 0
             m = 0
 
+            #Sum all influences and get the biggest one - we will use it in calc_influence
             for x in population:
                 s += x.get_fitness()
                 if m < x.get_fitness():
@@ -105,18 +118,24 @@ for solution_size in range(1,14):
                 x.calc_influence(s,m,len(population))
 
             population.sort(key=lambda x: x.get_influence(), reverse=True)
-            if population[0].get_fitness() == 0:
+
+            if population[0].get_fitness() == 0: #We found the best solution
                 break
+
+            #Mutation
             i = 0
             while i < population[0].get_fitness()*population_size/5 and i < (len(population) - 1):
                 population[random.randint(0, population_size-1)].mutation()
                 i += 1
 
+            #Get rid of half of the population
             population = population[0:population_size]
             #print (population)
             #print (str(j) +  ": " + str(population[0].get_influence()) + " " + str(population[0].get_fitness()))
             #input("Press Enter to continue...")
 
+
+            #Crossovers
             i = 0
             while i < population[0].get_fitness() and i < (len(population) - 1):
                 one = population[i]
