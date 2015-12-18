@@ -2,69 +2,119 @@
 # -*- coding: utf-8 -*-
 
 import random
-#Python debugger
 import pdb
+import argparse
+
+parser = argparse.ArgumentParser(description='Genetic algorithm')
+parser.add_argument('-n',
+                    '--problem-size',
+                    help='Size of problem (number of cards)',
+                    required=True,
+                    type=int)
+parser.add_argument('-p',
+                    '--population-size',
+                    help='Size of population (number of agents)',
+                    required=True,
+                    type=int)
+args = parser.parse_args()
+
 
 def prepare_solution(genotype_size):
-    """ Prepare example solution of size genotype_size. Return dict having desired sum and product, which we use as
-    a model we want to achieve.
+    """ Prepare example solution of size genotype_size. Return dict having
+    desired sum and product, which we use as a model we want to achieve.
     """
-    genotype = [random.randint(0,1) for x in range(genotype_size)]
-    s = 0
-    i = 0
-    for x in range(len(genotype)):
-        if genotype[x] == 0:
-            s += (x + 1)
-        elif genotype[x] == 1:
-            if i == 0:
-                i = 1
-            i *= (x + 1)
+    genotype = [random.randint(0, 1) for x in range(genotype_size)]
+    solution_sum = 0
+    solution_product = 0
+    for i in enumerate(genotype):
+        if genotype[i] == 0:
+            solution_sum += (x + 1)
+        elif genotype[i] == 1:
+            if solution_product == 0:
+                solution_product = 1
+            solution_product *= (x + 1)
 
-    d = {}
-    d['s'] = s
-    d['i'] = i
-    return d
+    destination = {}
+    destination['s'] = s
+    destination['i'] = i
+    destination['genotype'] = genotype
+    return destination
+
 
 class Phenotype:
+    """Main class describling our agents. It has genotype vector and all
+    operations witch are possible to run on it encapsulated inside itself.
     """
-    """
-    def __init__(self, size = None, genotype = None):
-        """If you specify only size it will automatically generate random solution."""
-        if genotype:
-            self.genotype = genotype
+    def __init__(self, **kwargs):
+        """Init new Phenotype object. If you specify only size it will
+        automatically generate random genotype.
+        Parameters:
+        size - specify size for random genotype vector witch will be created
+        for this Phenotype
+        genotype - if this parametr is specified it must be table containing
+        binary numbers 0,1 at all indices. This table will be used as genotype
+        for this Phenotype.
+        """
+        if "genotype" in kwargs.keys():
+            if type(kwargs["genotype"]) != list:
+                raise RuntimeError("Bad argument genotype. Must be list")
+            for i in kwargs["genotype"]:
+                if not (i != 0 or i != 1):
+                    raise RuntimeError("Bad argument genotype. "
+                                       "Not a binary list")
+            self.genotype = kwargs["genotype"]
+        elif "size" in kwargs.keys():
+            if type(kwargs["genotype"]) != int:
+                raise RuntimeError("Bad argument size. Must be int")
+            self.genotype = [random.randint(0, 1)
+                             for x in range(kwargs["size"])]
         else:
-            self.genotype = [random.randint(0,1) for x in range(size)]
+            raise RuntimeError("Bad arguments")
+
+        # that ones will be computer later
         self.fitness = 0.0
         self.influence = 0.0
+
     def __str__(self):
         s = "".join([str(x) for x in self.genotype])
         s += " Fitness: " + str(self.fitness)
         return s
+
     def __repr__(self):
         return self.__str__()
+
     def set_bit(self, index, bit):
         self.genotype[index] = bit % 2
+
     def get_bit(self, index):
         return self.genotype[index]
+
     def get_genotype(self):
         return self.genotype
+
     def get_size(self):
         return len(self.genotype)
+
     def get_fitness(self):
         return self.fitness
+
     def get_influence(self):
         return self.influence
+
     def calc_influence(self, s, maximum, i):
-        """Instead of killing agent with the lowest fittest we use this formula. It is improving speed of finding the best solution"""
-        self.influence = ( maximum - self.fitness + 1 )/( i*( maximum + 1 ) - s )
+        """Instead of killing agent with the lowest fittest we use this formula.
+        It is improving speed of finding the best solution"""
+        self.influence = (maximum - self.fitness + 1)/(i * (maximum + 1) - s)
+
     def mutation(self):
         """Flip a bit on a random position. """
-        position = random.randint(0,len(self.genotype) - 1)
-        self.genotype[position] ^= 1 #flip bit
+        position = random.randint(0, len(self.genotype) - 1)
+        self.genotype[position] ^= 1  # flip bit
+
     def crossover(self, other):
-        """Select a random index in genotype. Child A gets all bits before it, from self genotype and the rest from other.
-        Child B vice versa."""
-        position = random.randint( 0, len( self.genotype ) - 1 )
+        """Select a random index in genotype. Child A gets all bits before it,
+        from self genotype and the rest from other. Child B vice versa."""
+        position = random.randint(0, len(self.genotype) - 1)
         children_a = []
         children_b = []
         for x in range(len(self.genotype)):
@@ -78,8 +128,12 @@ class Phenotype:
         return {'a': Phenotype(0, children_a), 'b': Phenotype(0, children_b)}
 
     def calc_fitness_function(self, solution_sum, solution_product):
-        """For given parameters calculates how close are we from the best solution.
-        If this function returns 0 we found it"""
+        """For given parameters calculates how close are we from the best
+        solution. If this function returns 0 we found it. The function is
+        defined as:
+        f(sum, product) = |solution_sum - sum| + |solution_product - product|
+        where || is absolute value of number
+        """
         s = 0
         i = 0
         for x in range(len(self.genotype)):
@@ -92,12 +146,14 @@ class Phenotype:
 
         self.fitness = (abs(solution_sum-s) + abs(solution_product-i))
 
-#normal algorithm
-for solution_size in range(1,14):
+
+# normal algorithm
+for solution_size in range(args.problem_size, args.problem_size+ 1):
     #TODO: zrobic parser argumentow
     solution = prepare_solution(solution_size)
+    print ("Solution: " + str(solution['genotype']))
     #print ("Solution: " + str(solution))
-    for population_size in range(2,51):
+    for population_size in range(args.population_size, args.population_size + 1):
         #TODO: zrobic parser argumentow
         population = [Phenotype(solution_size) for x in range(population_size)]
         j = 0
@@ -119,6 +175,7 @@ for solution_size in range(1,14):
 
             population.sort(key=lambda x: x.get_influence(), reverse=True)
 
+            print (str(solution_size) + "\t" + str(population_size) + "\t" + str(j) + "\t" + str(population[0]))
             if population[0].get_fitness() == 0: #We found the best solution
                 break
 
@@ -130,6 +187,7 @@ for solution_size in range(1,14):
 
             #Get rid of half of the population
             population = population[0:population_size]
+            print (population)
             #print (population)
             #print (str(j) +  ": " + str(population[0].get_influence()) + " " + str(population[0].get_fitness()))
             #input("Press Enter to continue...")
@@ -147,10 +205,10 @@ for solution_size in range(1,14):
                 r['b'].mutation()
                 population.append(r['a'])
                 population.append(r['b'])
-            j+=1
+
+            j += 1
 
         #print ("Ilosc genow: " + str(solution_size) + " Wielkosc populacji: " + str(population_size) + " => Rozwiazanie: po " + str(j) + " iteracjach" +  ": " + str(population[0]))
-        print (str(solution_size) + "\t" + str(population_size) + "\t" + str(j))
 
 
 #differential evolution algorithm
@@ -202,5 +260,3 @@ def differential_evolution_algorith():
                     break
                 #else:
                     #print (str(solution_size) + "\t" + str(population_size) + "\t" + str(l) + "\t" + str(best_solution))
-
-differential_evolution_algorith()
