@@ -53,19 +53,19 @@ class Phenotype:
         for this Phenotype
         genotype - if this parametr is specified it must be table containing
         binary numbers 0,1 at all indices. This table will be used as genotype
-        for this Phenotype.
+        for this Phenotype. Size parameter will be ignored.
         """
         if "genotype" in kwargs.keys():
             if type(kwargs["genotype"]) != list:
-                raise RuntimeError("Bad argument genotype. Must be list")
+                raise RuntimeError('Bad argument "genotype". Must be list')
             for i in kwargs["genotype"]:
                 if not (i != 0 or i != 1):
-                    raise RuntimeError("Bad argument genotype. "
+                    raise RuntimeError('Bad "argument" genotype. '
                                        "Not a binary list")
             self.genotype = kwargs["genotype"]
         elif "size" in kwargs.keys():
             if type(kwargs["genotype"]) != int:
-                raise RuntimeError("Bad argument size. Must be int")
+                raise RuntimeError('Bad argument "size". Must be int')
             self.genotype = [random.randint(0, 1)
                              for x in range(kwargs["size"])]
         else:
@@ -77,7 +77,7 @@ class Phenotype:
 
     def __str__(self):
         s = "".join([str(x) for x in self.genotype])
-        s += " Fitness: " + str(self.fitness)
+        s = "Genotype: " + s + " Fitness: " + str(self.fitness)
         return s
 
     def __repr__(self):
@@ -148,13 +148,14 @@ class Phenotype:
 
 
 # normal algorithm
-for solution_size in range(args.problem_size, args.problem_size+ 1):
-    #TODO: zrobic parser argumentow
+for solution_size in range(args.problem_size, args.problem_size + 1):
+    # TODO: zrobic parser argumentow
     solution = prepare_solution(solution_size)
-    print ("Solution: " + str(solution['genotype']))
-    #print ("Solution: " + str(solution))
-    for population_size in range(args.population_size, args.population_size + 1):
-        #TODO: zrobic parser argumentow
+    print("Solution: " + str(solution['genotype']))
+    # print ("Solution: " + str(solution))
+    for population_size in range(args.population_size,
+                                 args.population_size + 1):
+        # TODO: zrobic parser argumentow
         population = [Phenotype(solution_size) for x in range(population_size)]
         j = 0
         while 1:
@@ -164,28 +165,30 @@ for solution_size in range(args.problem_size, args.problem_size+ 1):
             s = 0
             m = 0
 
-            #Sum all influences and get the biggest one - we will use it in calc_influence
-            for x in population:
-                s += x.get_fitness()
-                if m < x.get_fitness():
-                    m = x.get_fitness()
+            # Sum all influences and get the biggest one - we will use it
+            # in calc_influence
+            for ageng in population:
+                s += ageng.get_fitness()
+                if m < ageng.get_fitness():
+                    m = ageng.get_fitness()
 
             for x in population:
-                x.calc_influence(s,m,len(population))
+                x.calc_influence(s, m, len(population))
 
             population.sort(key=lambda x: x.get_influence(), reverse=True)
 
-            print (str(solution_size) + "\t" + str(population_size) + "\t" + str(j) + "\t" + str(population[0]))
-            if population[0].get_fitness() == 0: #We found the best solution
+            print(str(solution_size) + "\t" + str(population_size) + "\t" + str(j) + "\t" + str(population[0]))
+            if population[0].get_fitness() == 0:  # We found the best solution
                 break
 
-            #Mutation
+            # Mutation
             i = 0
-            while i < population[0].get_fitness()*population_size/5 and i < (len(population) - 1):
+            while (i < population[0].get_fitness()*population_size/5 and
+                   i < (len(population) - 1)):
                 population[random.randint(0, population_size-1)].mutation()
                 i += 1
 
-            #Get rid of half of the population
+            # Get rid of half of the population
             population = population[0:population_size]
             print (population)
             #print (population)
@@ -193,7 +196,7 @@ for solution_size in range(args.problem_size, args.problem_size+ 1):
             #input("Press Enter to continue...")
 
 
-            #Crossovers
+            # Crossovers
             i = 0
             while i < population[0].get_fitness() and i < (len(population) - 1):
                 one = population[i]
