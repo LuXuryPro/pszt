@@ -1,7 +1,9 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+import pdb
 import random
+import unittest
 
 
 def prepare_solution(genotype_size):
@@ -65,7 +67,7 @@ class Phenotype:
 
     def __str__(self):
         s = "".join([str(x) for x in self.genotype])
-        s = "Genotype: " + s + " Fitness: " + str(self.fitness)
+        s = "Genotype: " + s + " Fitness: " + str(self.fitness) + " Influence: " + str(self.influence)
         return s
 
     def __repr__(self):
@@ -92,12 +94,15 @@ class Phenotype:
     def calc_influence(self, s, maximum, i):
         """Instead of killing agent with the lowest fittest we use this formula.
         It is improving speed of finding the best solution"""
-        self.influence = (maximum - self.fitness + 1)/(i * (maximum + 1) - s)
+        self.influence = float(maximum - self.fitness + 1)/float(i * (maximum + 1) - s)
 
     def mutation(self):
         """Flip a bit on a random position. """
-        position = random.randint(0, len(self.genotype) - 1)
-        self.genotype[position] ^= 1  # flip bit
+        p = 0.5 # mutation probability
+        for bit in enumerate(self.genotype):
+            dice = random.random()
+            if dice < p:
+                self.genotype[bit[0]] ^= 1  # flip bit
 
     def crossover(self, other):
         """Select a random index in genotype. Child A gets all bits before it,
@@ -121,7 +126,7 @@ class Phenotype:
         solution. If this function returns 0 we found it. The function is
         defined as:
         f(sum, product) = |solution_sum - sum| + |solution_product - product|
-        where || is absolute value of number
+        where |x| is absolute value of number x
         """
         s = 0
         i = 0
@@ -134,3 +139,31 @@ class Phenotype:
                 i *= (x + 1)
 
         self.fitness = (abs(solution_sum - s) + abs(solution_product - i))
+
+
+
+class TestPhenotypeMethods(unittest.TestCase):
+
+  def test_mutation(self):
+      p = Phenotype(size=10)
+      p.mutation()
+
+  def test_calc_fitness_function(self):
+      p = Phenotype(genotype=[0,0,0,1])
+      p.calc_fitness_function(6,4)
+      self.assertEqual(p.get_fitness(), 0)
+
+      p = Phenotype(genotype=[1,0,0,1])
+      p.calc_fitness_function(4,3)
+      self.assertEqual(p.get_fitness(), 2)
+
+      p = Phenotype(genotype=[1,0])
+      p.calc_fitness_function(2,1)
+      self.assertEqual(p.get_fitness(), 0)
+
+      p = Phenotype(genotype=[1,0])
+      p.calc_fitness_function(1,2)
+      self.assertEqual(p.get_fitness(), 2)
+
+if __name__ == '__main__':
+    unittest.main()
