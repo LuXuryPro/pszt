@@ -3,6 +3,7 @@
 
 import random
 import phenotype
+import ipdb
 
 
 class Generation:
@@ -25,14 +26,6 @@ class Generation:
         for individiual in self.population:
             individiual.calc_fitness_function(self.destination_sum,
                                               self.destination_product)
-
-    def step(self):
-        """Do one step of generation including mutations, crossovers, and
-        selection.
-        TODO This will be overwriten by child class
-        """
-        self.calc_fitness()
-
         s = 0
         m = 0
 
@@ -48,32 +41,65 @@ class Generation:
 
         self.population.sort(key=lambda x: x.get_influence(), reverse=True)
 
-        new_population = []
-        for agent in self.population:
-            for count in range(int(agent.get_fitness() *
-                               self.number_of_individuals)):
-                new_population.append(agent)
-        self.population = new_population
-
-        # Mutation
+    def mutation(self):
         i = 0
-        while (i < self.population[0].get_fitness() *
-                self.number_of_individuals/5 and
-                i < (self.number_of_individuals - 1)):
+        while i < self.number_of_individuals*0.1:
             self.population[
-                    random.randint(0, self.number_of_individuals - 1)
+                    random.randint(0, len(self.population) - 1)
                     ].mutation()
             i += 1
-        # Crossovers
-        i = 0
-        while (i < self.population[0].get_fitness() and
-                i < self.number_of_individuals - 1):
-            one = self.population[i]
-            i += 1
-            second = self.population[i]
-            i += 1
-            r = one.crossover(second)
-            self.population.append(r['a'])
-            self.population.append(r['b'])
 
-        self.population = self.population[0:self.number_of_individuals]
+    def step(self):
+        """Do one step of generation including mutations, crossovers, and
+        selection.
+        TODO This will be overwriten by child class
+        """
+        self.calc_fitness()
+
+
+        # select parents
+        parents = []
+        for parent in self.population:
+            # roll dice
+            dice = random.random()
+            for agent in self.population:
+                dice -= agent.get_influence()
+                if dice <= 0:
+                    parents.append(agent)
+                    break
+
+        assert(len(parents) == len(self.population))
+
+        list_of_indices = range(self.number_of_individuals)
+
+        assert(self.number_of_individuals % 2 == 0)
+
+        childrens = []
+        for pair in range(self.number_of_individuals/2):
+            first = random.randint(0, len(list_of_indices) - 1)
+            del list_of_indices[first]
+            second = random.randint(0, len(list_of_indices) - 1)
+            del list_of_indices[second]
+
+            first_parent = parents[first]
+            second_parent = parents[second]
+
+            children = first_parent.crossover(second_parent)
+            children['a'].mutation()
+            children['b'].mutation()
+
+            children['a'].calc_fitness_function(self.destination_sum, self.destination_product)
+            children['b'].calc_fitness_function(self.destination_sum, self.destination_product)
+
+            selector = []
+            selector.append(first_parent)
+            selector.append(second_parent)
+            selector.append(children['a'])
+            selector.append(children['b'])
+
+            selector.sort(key=lambda x: x.get_fitness(), reverse=False)
+            childrens.append(selector[0])
+            childrens.append(selector[1])
+
+        assert(len(childrens) == len(self.population))
+        self.population = childrens
