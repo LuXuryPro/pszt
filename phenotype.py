@@ -66,8 +66,20 @@ class Phenotype:
         self.influence = 0.0
 
     def __str__(self):
+        st = "===Genotype===\n"
         s = "".join([str(x) for x in self.genotype])
-        s = "Genotype: " + s + " Fitness: " + str(self.fitness) + " Influence: " + str(self.influence)
+        s = st + "Genotype: " + s + " Fitness: " + str(self.fitness) + " Influence: " + str(self.influence)
+        group_a = []
+        group_b = []
+        for bit in enumerate(self.genotype):
+            if bit[1] == 0:
+                group_a.append(bit[0])
+            elif bit[1] == 1:
+                group_b.append(bit[0])
+        s += "\n"
+        s += "Group 1: " + str(group_a) + "\n"
+        s += "Group 2: " + str(group_b) + "\n"
+        s += "========================="
         return s
 
     def __repr__(self):
