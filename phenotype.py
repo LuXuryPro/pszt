@@ -4,6 +4,7 @@
 import pdb
 import random
 import unittest
+import math
 
 
 def prepare_solution(genotype_size):
@@ -64,18 +65,30 @@ class Phenotype:
         # that ones will be computer later
         self.fitness = 0.0
         self.influence = 0.0
+        self.minimum_val = sum(range(1, len(self.genotype) + 1))
+        self.maximum_val = 1
+        s = 0
+        p = 1
+        for i in range(len(self.genotype)):
+            if i == 0 or i == 1:
+                continue
+            self.maximum_val *= (i + 1)
+        self.maximum_val += 1
+        self.maximum_val *= 3
+        self.minimum_val += 1
 
     def __str__(self):
         st = "===Genotype===\n"
         s = "".join([str(x) for x in self.genotype])
-        s = st + "Genotype: " + s + " Fitness: " + str(self.fitness) + " Influence: " + str(self.influence)
+        s = (st + "Genotype: " + s + " Fitness: " + str(self.fitness) +
+             " Influence: " + str(self.influence))
         group_a = []
         group_b = []
         for bit in enumerate(self.genotype):
             if bit[1] == 0:
-                group_a.append(bit[0])
+                group_a.append(bit[0] + 1)
             elif bit[1] == 1:
-                group_b.append(bit[0])
+                group_b.append(bit[0] + 1)
         s += "\n"
         s += "Group 1: " + str(group_a) + "\n"
         s += "Group 2: " + str(group_b) + "\n"
@@ -103,18 +116,17 @@ class Phenotype:
     def get_influence(self):
         return self.influence
 
-    def calc_influence(self, s, maximum, i):
+    def calc_influence(self, fitness_sum):
         """Instead of killing agent with the lowest fittest we use this formula.
         It is improving speed of finding the best solution"""
-        self.influence = float(maximum - self.fitness + 1)/float(i * (maximum + 1) - s)
+        self.influence = self.fitness/fitness_sum
 
-    def mutation(self):
+    def mutation(self, p):
         """Flip a bit on a random position. """
-        p = 0.5 # mutation probability
-        for bit in enumerate(self.genotype):
-            dice = random.random()
-            if dice < p:
-                self.genotype[bit[0]] ^= 1  # flip bit
+        if random.random() <= p:
+            bit_index = random.randint(0, self.get_size() - 1)
+            self.genotype[bit_index] = int((bool(self.genotype[bit_index]) !=
+                                           True))
 
     def crossover(self, other):
         """Select a random index in genotype. Child A gets all bits before it,
@@ -133,6 +145,22 @@ class Phenotype:
         return {'a': Phenotype(genotype=children_a),
                 'b': Phenotype(genotype=children_b)}
 
+    def calc_sum(self):
+        s = 0
+        for x in range(len(self.genotype)):
+            if self.genotype[x] == 0:
+                s += (x + 1)
+        return s
+
+    def calc_product(self):
+        i = 0
+        for x in range(len(self.genotype)):
+            if self.genotype[x] == 1:
+                if i == 0:
+                    i = 1
+                i *= (x + 1)
+        return i
+
     def calc_fitness_function(self, solution_sum, solution_product):
         """For given parameters calculates how close are we from the best
         solution. If this function returns 0 we found it. The function is
@@ -150,32 +178,32 @@ class Phenotype:
                     i = 1
                 i *= (x + 1)
 
-        self.fitness = (abs(solution_sum - s) + abs(solution_product - i))
-
+        sum_diff = float(solution_sum - s) / float(solution_sum)
+        prod_diff = float(solution_product - i) / float(solution_product)
+        self.fitness = abs(sum_diff) + abs(prod_diff)
 
 
 class TestPhenotypeMethods(unittest.TestCase):
+    def test_mutation(self):
+        p = Phenotype(size=10)
+        p.mutation()
 
-  def test_mutation(self):
-      p = Phenotype(size=10)
-      p.mutation()
+    def test_calc_fitness_function(self):
+        p = Phenotype(genotype=[0, 0, 0, 1])
+        p.calc_fitness_function(6, 4)
+        self.assertEqual(p.get_fitness(), 0)
 
-  def test_calc_fitness_function(self):
-      p = Phenotype(genotype=[0,0,0,1])
-      p.calc_fitness_function(6,4)
-      self.assertEqual(p.get_fitness(), 0)
+        p = Phenotype(genotype=[1,0,0,1])
+        p.calc_fitness_function(4,3)
+        self.assertEqual(p.get_fitness(), 2)
 
-      p = Phenotype(genotype=[1,0,0,1])
-      p.calc_fitness_function(4,3)
-      self.assertEqual(p.get_fitness(), 2)
+        p = Phenotype(genotype=[1,0])
+        p.calc_fitness_function(2,1)
+        self.assertEqual(p.get_fitness(), 0)
 
-      p = Phenotype(genotype=[1,0])
-      p.calc_fitness_function(2,1)
-      self.assertEqual(p.get_fitness(), 0)
-
-      p = Phenotype(genotype=[1,0])
-      p.calc_fitness_function(1,2)
-      self.assertEqual(p.get_fitness(), 2)
+        p = Phenotype(genotype=[1,0])
+        p.calc_fitness_function(1,2)
+        self.assertEqual(p.get_fitness(), 2)
 
 if __name__ == '__main__':
     unittest.main()
