@@ -49,57 +49,40 @@ class Generation:
                     ].mutation()
             i += 1
 
+    def get_best(self):
+        for individiual in self.population:
+            individiual.calc_fitness_function(self.destination_sum,
+                                              self.destination_product)
+        self.population.sort(key=lambda x: x.get_fitness(), reverse=False)
+        return self.population[0]
+
     def step(self):
         """Do one step of generation including mutations, crossovers, and
         selection.
         TODO This will be overwriten by child class
         """
-        self.calc_fitness()
+
+        a = random.choice(self.population)
+        b = random.choice(self.population)
+
+        a.calc_fitness_function(self.destination_sum, self.destination_product)
+        b.calc_fitness_function(self.destination_sum, self.destination_product)
+
+        if a.get_fitness() < b.get_fitness():
+            w = a
+            l = b
+        else:
+            w = b
+            l = a
+
+        for bit in enumerate(w.genotype):
+            if random.random() < 0.5:
+                l.genotype[bit[0]] = bit[1]
+            if random.random() < 0.4:
+                l.genotype[bit[0]] ^= 1
 
 
-        # select parents
-        parents = []
-        for parent in self.population:
-            # roll dice
-            dice = random.random()
-            for agent in self.population:
-                dice -= agent.get_influence()
-                if dice <= 0:
-                    parents.append(agent)
-                    break
 
-        assert(len(parents) == len(self.population))
 
-        list_of_indices = range(self.number_of_individuals)
 
-        assert(self.number_of_individuals % 2 == 0)
 
-        childrens = []
-        for pair in range(self.number_of_individuals/2):
-            first = random.randint(0, len(list_of_indices) - 1)
-            del list_of_indices[first]
-            second = random.randint(0, len(list_of_indices) - 1)
-            del list_of_indices[second]
-
-            first_parent = parents[first]
-            second_parent = parents[second]
-
-            children = first_parent.crossover(second_parent)
-            children['a'].mutation()
-            children['b'].mutation()
-
-            children['a'].calc_fitness_function(self.destination_sum, self.destination_product)
-            children['b'].calc_fitness_function(self.destination_sum, self.destination_product)
-
-            selector = []
-            selector.append(first_parent)
-            selector.append(second_parent)
-            selector.append(children['a'])
-            selector.append(children['b'])
-
-            selector.sort(key=lambda x: x.get_fitness(), reverse=False)
-            childrens.append(selector[0])
-            childrens.append(selector[1])
-
-        assert(len(childrens) == len(self.population))
-        self.population = childrens

@@ -73,9 +73,9 @@ class Phenotype:
         group_b = []
         for bit in enumerate(self.genotype):
             if bit[1] == 0:
-                group_a.append(bit[0])
+                group_a.append(bit[0] + 1)
             elif bit[1] == 1:
-                group_b.append(bit[0])
+                group_b.append(bit[0] + 1)
         s += "\n"
         s += "Group 1: " + str(group_a) + "\n"
         s += "Group 2: " + str(group_b) + "\n"
@@ -150,7 +150,9 @@ class Phenotype:
                     i = 1
                 i *= (x + 1)
 
-        self.fitness = (abs(solution_sum - s) + abs(solution_product - i))
+        sum_diff = float(solution_sum - s) / float(solution_sum)
+        prod_diff = float(solution_product - i) / float(solution_product)
+        self.fitness = abs(sum_diff) + abs(prod_diff)
 
 
 
