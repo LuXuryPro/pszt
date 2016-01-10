@@ -27,16 +27,16 @@ def prepare_solution(genotype_size):
     solution_sum = 0
     solution_product = 0
     for i in enumerate(genotype):
-        if genotype[i] == 0:
-            solution_sum += (x + 1)
-        elif genotype[i] == 1:
+        if genotype[i[0]] == 0:
+            solution_sum += (i[0] + 1)
+        elif genotype[i[0]] == 1:
             if solution_product == 0:
                 solution_product = 1
-            solution_product *= (x + 1)
+            solution_product *= (i[0] + 1)
 
     destination = {}
-    destination['s'] = s
-    destination['i'] = i
+    destination['s'] = solution_sum
+    destination['i'] = solution_product
     destination['genotype'] = genotype
     return destination
 
@@ -64,7 +64,7 @@ class Phenotype:
                                        "Not a binary list")
             self.genotype = kwargs["genotype"]
         elif "size" in kwargs.keys():
-            if type(kwargs["genotype"]) != int:
+            if type(kwargs["size"]) != int:
                 raise RuntimeError('Bad argument "size". Must be int')
             self.genotype = [random.randint(0, 1)
                              for x in range(kwargs["size"])]
@@ -125,7 +125,7 @@ class Phenotype:
                 children_b.append(self.genotype[x])
                 children_a.append(other.genotype[x])
 
-        return {'a': Phenotype(0, children_a), 'b': Phenotype(0, children_b)}
+        return {'a': Phenotype(genotype=children_a), 'b': Phenotype(genotype=children_b)}
 
     def calc_fitness_function(self, solution_sum, solution_product):
         """For given parameters calculates how close are we from the best
@@ -156,7 +156,7 @@ for solution_size in range(args.problem_size, args.problem_size + 1):
     for population_size in range(args.population_size,
                                  args.population_size + 1):
         # TODO: zrobic parser argumentow
-        population = [Phenotype(solution_size) for x in range(population_size)]
+        population = [Phenotype(size=solution_size) for x in range(population_size)]
         j = 0
         while 1:
             for x in population:
@@ -175,7 +175,7 @@ for solution_size in range(args.problem_size, args.problem_size + 1):
             for x in population:
                 x.calc_influence(s, m, len(population))
 
-            population.sort(key=lambda x: x.get_influence(), reverse=True)
+            population.sort(key=lambda x: x.get_fitness(), reverse=False)
 
             print(str(solution_size) + "\t" + str(population_size) + "\t" + str(j) + "\t" + str(population[0]))
             if population[0].get_fitness() == 0:  # We found the best solution

@@ -150,8 +150,8 @@ class Phenotype:
                     i = 1
                 i *= (x + 1)
 
-        sum_diff = float(solution_sum - s) / float(solution_sum)
-        prod_diff = float(solution_product - i) / float(solution_product)
+        sum_diff = float(solution_sum - s) / float(solution_sum + 1)
+        prod_diff = float(solution_product - i) / float(solution_product + 1)
         self.fitness = abs(sum_diff) + abs(prod_diff)
 
 
