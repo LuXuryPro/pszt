@@ -59,6 +59,7 @@ class Generation:
                                               self.destination_product)
         self.population.sort(key=lambda x: x.get_fitness(), reverse=False)
         return self.population[0]
+
     def get_worst(self):
         self.get_best()  # sorts population
         return self.population[-1]
@@ -73,7 +74,29 @@ class Generation:
         return float(fitness_sum)/float(self.number_of_individuals)
 
     def step(self):
-        pass
+        i = 0
+        while (i < self.population[0].get_fitness()*self.number_of_individuals/5 and
+                i < (len(self.population) - 1)):
+            self.population[random.randint(0,
+                self.number_of_individuals-1)].mutation(0.5)
+            i += 1
+
+        # Get rid of half of the population
+        self.population = self.population[0:self.number_of_individuals]
+        assert(len(self.population) == self.number_of_individuals)
+
+        # Crossovers
+        i = 0
+        while i < self.population[0].get_fitness() and i < (len(self.population) - 1):
+            one = self.population[i]
+            i += 1
+            second = self.population[i]
+            i += 1
+            r = one.crossover(second)
+            r['a'].mutation(0.01)
+            r['b'].mutation(0.01)
+            self.population.append(r['a'])
+            self.population.append(r['b'])
 
 
 class MicrobalGaGeneration(Generation):
@@ -106,49 +129,6 @@ class MicrobalGaGeneration(Generation):
 
 
 class RuletteGeneration(Generation):
-    def calc_fitness(self):
-        """Rank based fitness calculation"""
-        for individiual in self.population:
-            individiual.calc_fitness_function(self.destination_sum,
-                                              self.destination_product)
-
-        curr_f = self.population[0].get_fitness()
-        curr_rank = len(self.population)
-        for agent in self.population:
-            if agent.get_fitness() == curr_f:
-                agent.fitness = curr_rank
-            else:
-                curr_rank -= 1
-                curr_f = agent.get_fitness()
-                agent.fitness = curr_rank
-
-        s = 0
-        # Sum all influences and get the biggest one - we will use it
-        # in calc_influence
-        for agent in self.population:
-            s += agent.get_fitness()
-
-        f_ave = 0
-        for x in self.population:
-            f_ave += x.get_fitness()
-
-        f_ave /= len(self.population)
-
-        f_max = 0
-        for x in self.population:
-            if x.get_fitness() > f_max:
-                f_max = x.get_fitness()
-
-        c = 2
-        a = (c*f_ave - f_ave)/(f_max - f_ave)
-        b = c*f_ave - a*f_max
-
-        for x in self.population:
-            x.fitness = a*x.fitness + b
-
-        for x in self.population:
-            x.calc_influence(s)
-
     def mutation(self):
         i = 0
         p = 1
@@ -163,6 +143,7 @@ class RuletteGeneration(Generation):
 
         # select parents
         parents = []
+        self.get_best()
 
         for i in self.population:
             # roll dice
@@ -219,6 +200,39 @@ class RuletteGeneration(Generation):
 
         assert(len(childrens) == len(self.population))
         self.population = childrens
+
+class DifferantialEvolution(Generation):
+    def step(self):
+        #differential weight [0,2]
+        F = 1
+        #crossover probability [0,1]
+        CR = 0.5
+        for j in range(self.number_of_individuals):
+            x = random.randint(0,self.number_of_individuals - 1)
+            a = x
+            b = x
+            c = x
+            while a == x:
+                a = random.randint(0,self.number_of_individuals - 1)
+            while b == x or b == a:
+                b = random.randint(0,self.number_of_individuals-1)
+            while c == x or c == a or c == b:
+                c = random.randint(0,self.number_of_individuals-1)
+            R = random.randint(0, len(self.population[0].genotype) - 1)
+            candidate = phenotype.Phenotype(genotype=self.population[x].get_genotype())
+            for k in range(len(self.population[0].genotype)):
+                if random.randint(0, len(self.population[0].genotype)- 1) == R or random.random() < CR:
+                    candidate.set_bit(k, self.population[a].get_bit(k) +
+                            F*(self.population[b].get_bit(k)-self.population[c].get_bit(k)))
+            self.population[x].calc_fitness_function(self.destination_sum,
+                    self.destination_product)
+            candidate.calc_fitness_function(self.destination_sum,
+                    self.destination_product)
+            if candidate.get_fitness() == 0:
+                break
+            if candidate.get_fitness() > self.population[x].get_fitness():
+                del self.population[x]
+                self.population.append(candidate)
 
 class TestGenerationMethods(unittest.TestCase):
     def test_get_best(self):

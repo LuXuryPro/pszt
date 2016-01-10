@@ -108,9 +108,8 @@ class Phenotype:
         It is improving speed of finding the best solution"""
         self.influence = float(maximum - self.fitness + 1)/float(i * (maximum + 1) - s)
 
-    def mutation(self):
+    def mutation(self, p):
         """Flip a bit on a random position. """
-        p = 0.5 # mutation probability
         for bit in enumerate(self.genotype):
             dice = random.random()
             if dice < p:
