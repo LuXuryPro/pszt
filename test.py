@@ -4,15 +4,16 @@
 import generation
 import phenotype
 
-size = 40
+size = 4
 solution = phenotype.prepare_solution(size)
-# g = generation.DifferentialEvolution(100, size)
-g = generation.MicrobalGaGeneration(5, size)
-# g = generation.Generation(100, size)
-g.set_destination(solution["solution_sum"], solution["solution_product"])
+#g = generation.DifferantialEvolution(10, size)
+#g = generation.MicrobalGaGeneration(3, size)
+g = generation.Generation(5, size)
+#g.set_destination(solution["solution_sum"], solution["solution_product"])
+g.set_destination(0,24)
 avg = []
 i = 0
-graph = 1
+graph = 0
 while 1:
     if graph:
         print(str(g.get_best().get_fitness()) + " " +
@@ -29,7 +30,7 @@ while 1:
         avg.append(g.get_avg_fitness())
     elif len(set(avg)) <= 1:
             break
-    if i == 300:
+    if i == 500:
         break
     g.step()
     i += 1

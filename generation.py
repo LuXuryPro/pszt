@@ -6,6 +6,20 @@ import phenotype
 import unittest
 import math
 
+def prepare_lookup_table(size_of_genotype):
+    p = 100
+    bit_probability_table = []
+    for bit in range(size_of_genotype):
+        if bit != size_of_genotype - 1:
+            # Bit is not last one
+            bit_probability = 100/(2**(bit + 1))
+            p -= bit_probability
+        else:
+            # This is last bit so give it ramaining probability
+            bit_probability = p
+        bit_probability_table.append(bit_probability)
+    return bit_probability_table
+
 
 class Generation:
     """Generic generation class. It contains common fields for all other
@@ -18,6 +32,7 @@ class Generation:
         self.number_of_individuals = number_of_individuals
         self.destination_sum = 0
         self.destination_product = 0
+        self.bit_probability_table = prepare_lookup_table(size_of_genotype)
 
     def __str__(self):
         s = "\n".join([str(x) for x in self.population])
@@ -78,26 +93,29 @@ class Generation:
 
     def step(self):
         i = 0
-        while (i < self.population[0].get_fitness()*self.number_of_individuals/5 and
+        while (i <
+                self.population[0].get_fitness()*self.number_of_individuals*10 and
                 i < (len(self.population) - 1)):
             self.population[random.randint(0,
-                self.number_of_individuals-1)].mutation(0.5)
+                self.number_of_individuals-1)].mutation(0.5,
+                        self.bit_probability_table)
             i += 1
 
+        self.get_best()
         # Get rid of half of the population
         self.population = self.population[0:self.number_of_individuals]
         assert(len(self.population) == self.number_of_individuals)
 
         # Crossovers
         i = 0
-        while i < self.population[0].get_fitness() and i < (len(self.population) - 1):
+        while i < 10*self.population[0].get_fitness() and i < (len(self.population) - 1):
             one = self.population[i]
             i += 1
             second = self.population[i]
             i += 1
             r = one.crossover(second)
-            r['a'].mutation(0.01)
-            r['b'].mutation(0.01)
+            r['a'].mutation(0.01, self.bit_probability_table)
+            r['b'].mutation(0.01, self.bit_probability_table)
             self.population.append(r['a'])
             self.population.append(r['b'])
 
@@ -127,7 +145,7 @@ class MicrobalGaGeneration(Generation):
         for bit in enumerate(w.genotype):
             if random.random() < 0.5:
                 l.genotype[bit[0]] = bit[1]
-            if random.random() < 10*self.get_best().get_fitness():
+            if random.random() < 0.1*self.bit_probability_table[bit[0]]:
                 l.genotype[bit[0]] ^= 1
 
 
@@ -259,6 +277,9 @@ class TestGenerationMethods(unittest.TestCase):
         g.population[2].genotype = [0, 0]
         g.population[3].genotype = [0, 0]
         self.assertEqual(g.get_avg_fitness(), 0)
+
+    def test_prepare_lookup_table(self):
+        print(prepare_lookup_table(5))
 
 if __name__ == '__main__':
         unittest.main()

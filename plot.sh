@@ -1,4 +1,4 @@
 #!/bin/bash
 
 ./test.py > result.txt
-gnuplot plot.gp | zathura -
+gnuplot plot.gp > result.png

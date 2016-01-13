@@ -108,12 +108,14 @@ class Phenotype:
         It is improving speed of finding the best solution"""
         self.influence = float(maximum - self.fitness + 1)/float(i * (maximum + 1) - s)
 
-    def mutation(self, p):
+    def mutation(self, p, bit_probability_table):
         """Flip a bit on a random position. """
-        for bit in enumerate(self.genotype):
-            dice = random.random()
-            if dice < p:
-                self.genotype[bit[0]] ^= 1  # flip bit
+        #for bit in enumerate(self.genotype):
+        bit = random.randint(0, len(self.genotype) - 1)
+        probability_of_mutation = bit_probability_table[bit] * p
+        dice = random.random()
+        if dice < probability_of_mutation:
+            self.genotype[bit] ^= 1  # flip bit
 
     def crossover(self, other):
         """Select a random index in genotype. Child A gets all bits before it,
