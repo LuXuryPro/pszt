@@ -6,6 +6,7 @@ import phenotype
 import unittest
 import math
 
+
 class Generation:
     """Generic generation class. It contains common fields for all other
     algorithm variations.
@@ -15,6 +16,8 @@ class Generation:
                            for i in range(number_of_individuals)]
         self.num_iterations = 0
         self.number_of_individuals = number_of_individuals
+        self.destination_sum = 0
+        self.destination_product = 0
 
     def __str__(self):
         s = "\n".join([str(x) for x in self.population])
@@ -27,9 +30,9 @@ class Generation:
 
     def calc_fitness(self):
         "Fitness calculation based on actual fitness function"""
-        for individiual in self.population:
-            individiual.calc_fitness_function(self.destination_sum,
-                                              self.destination_product)
+        for individual in self.population:
+            individual.calc_fitness_function(self.destination_sum,
+                                             self.destination_product)
         s = 0
         m = 0
 
@@ -54,9 +57,9 @@ class Generation:
             i += 1
 
     def get_best(self):
-        for individiual in self.population:
-            individiual.calc_fitness_function(self.destination_sum,
-                                              self.destination_product)
+        for individual in self.population:
+            individual.calc_fitness_function(self.destination_sum,
+                                             self.destination_product)
         self.population.sort(key=lambda x: x.get_fitness(), reverse=False)
         return self.population[0]
 
@@ -66,10 +69,10 @@ class Generation:
 
     def get_avg_fitness(self):
         fitness_sum = 0.0
-        for individiual in self.population:
-            individiual.calc_fitness_function(self.destination_sum,
-                                              self.destination_product)
-            fitness_sum += individiual.get_fitness()
+        for individual in self.population:
+            individual.calc_fitness_function(self.destination_sum,
+                                             self.destination_product)
+            fitness_sum += individual.get_fitness()
 
         return float(fitness_sum)/float(self.number_of_individuals)
 
@@ -103,7 +106,7 @@ class MicrobalGaGeneration(Generation):
     def step(self):
         """Do one step of generation including mutations, crossovers, and
         selection.
-        TODO This will be overwriten by child class
+        TODO This will be overwrr+iten by child class
         """
 
         a = random.choice(self.population)
@@ -180,13 +183,13 @@ class RuletteGeneration(Generation):
             children['a'].mutation(probability_of_mutation)
             children['b'].mutation(probability_of_mutation)
             first_parent.calc_fitness_function(self.destination_sum,
-                    self.destination_product)
+                                               self.destination_product)
             second_parent.calc_fitness_function(self.destination_sum,
-                    self.destination_product)
+                                                self.destination_product)
             children['a'].calc_fitness_function(self.destination_sum,
-                    self.destination_product)
+                                                self.destination_product)
             children['b'].calc_fitness_function(self.destination_sum,
-                    self.destination_product)
+                                                self.destination_product)
 
             selector = []
             selector.append(first_parent)
@@ -201,11 +204,12 @@ class RuletteGeneration(Generation):
         assert(len(childrens) == len(self.population))
         self.population = childrens
 
-class DifferantialEvolution(Generation):
+
+class DifferentialEvolution(Generation):
     def step(self):
-        #differential weight [0,2]
+        # differential weight [0,2]
         F = 1
-        #crossover probability [0,1]
+        # crossover probability [0,1]
         CR = 0.5
         for j in range(self.number_of_individuals):
             x = random.randint(0,self.number_of_individuals - 1)
@@ -213,26 +217,27 @@ class DifferantialEvolution(Generation):
             b = x
             c = x
             while a == x:
-                a = random.randint(0,self.number_of_individuals - 1)
+                a = random.randint(0, self.number_of_individuals - 1)
             while b == x or b == a:
-                b = random.randint(0,self.number_of_individuals-1)
+                b = random.randint(0, self.number_of_individuals-1)
             while c == x or c == a or c == b:
-                c = random.randint(0,self.number_of_individuals-1)
+                c = random.randint(0, self.number_of_individuals-1)
             R = random.randint(0, len(self.population[0].genotype) - 1)
             candidate = phenotype.Phenotype(genotype=self.population[x].get_genotype())
             for k in range(len(self.population[0].genotype)):
-                if random.randint(0, len(self.population[0].genotype)- 1) == R or random.random() < CR:
+                if random.randint(0, len(self.population[0].genotype) - 1) == R or random.random() < CR:
                     candidate.set_bit(k, self.population[a].get_bit(k) +
-                            F*(self.population[b].get_bit(k)-self.population[c].get_bit(k)))
+                                      F*(self.population[b].get_bit(k)-self.population[c].get_bit(k)))
             self.population[x].calc_fitness_function(self.destination_sum,
-                    self.destination_product)
+                                                     self.destination_product)
             candidate.calc_fitness_function(self.destination_sum,
-                    self.destination_product)
+                                            self.destination_product)
             if candidate.get_fitness() == 0:
                 break
             if candidate.get_fitness() > self.population[x].get_fitness():
                 del self.population[x]
                 self.population.append(candidate)
+
 
 class TestGenerationMethods(unittest.TestCase):
     def test_get_best(self):

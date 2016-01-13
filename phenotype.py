@@ -32,8 +32,8 @@ def prepare_solution(genotype_size):
 
 
 class Phenotype:
-    """Main class describling our agents. It has genotype vector and all
-    operations witch are possible to run on it encapsulated inside itself.
+    """Main class describing our agents. It has genotype vector and all
+    operations which are possible to run on it encapsulated inside itself.
     """
     def __init__(self, **kwargs):
         """Init new Phenotype object. If you specify only size it will
@@ -41,7 +41,7 @@ class Phenotype:
         Parameters:
         size - specify size for random genotype vector witch will be created
         for this Phenotype
-        genotype - if this parametr is specified it must be table containing
+        genotype - if this parameter is specified it must be table containing
         binary numbers 0,1 at all indices. This table will be used as genotype
         for this Phenotype. Size parameter will be ignored.
         """
@@ -61,7 +61,7 @@ class Phenotype:
         else:
             raise RuntimeError("Bad arguments")
 
-        # that ones will be computer later
+        # that ones will be compute later
         self.fitness = 0.0
         self.influence = 0.0
 
@@ -154,29 +154,28 @@ class Phenotype:
         self.fitness = abs(sum_diff) + abs(prod_diff)
 
 
-
 class TestPhenotypeMethods(unittest.TestCase):
 
-  def test_mutation(self):
-      p = Phenotype(size=10)
-      p.mutation()
+    def test_mutation(self):
+        p = Phenotype(size=10)
+        p.mutation()
 
-  def test_calc_fitness_function(self):
-      p = Phenotype(genotype=[0,0,0,1])
-      p.calc_fitness_function(6,4)
-      self.assertEqual(p.get_fitness(), 0)
+    def test_calc_fitness_function(self):
+        p = Phenotype(genotype=[0, 0, 0, 1])
+        p.calc_fitness_function(6, 4)
+        self.assertEqual(p.get_fitness(), 0)
 
-      p = Phenotype(genotype=[1,0,0,1])
-      p.calc_fitness_function(4,3)
-      self.assertEqual(p.get_fitness(), 2)
+        p = Phenotype(genotype=[1, 0, 0, 1])
+        p.calc_fitness_function(4, 3)
+        self.assertEqual(p.get_fitness(), 2)
 
-      p = Phenotype(genotype=[1,0])
-      p.calc_fitness_function(2,1)
-      self.assertEqual(p.get_fitness(), 0)
+        p = Phenotype(genotype=[1, 0])
+        p.calc_fitness_function(2, 1)
+        self.assertEqual(p.get_fitness(), 0)
 
-      p = Phenotype(genotype=[1,0])
-      p.calc_fitness_function(1,2)
-      self.assertEqual(p.get_fitness(), 2)
+        p = Phenotype(genotype=[1, 0])
+        p.calc_fitness_function(1, 2)
+        self.assertEqual(p.get_fitness(), 2)
 
 if __name__ == '__main__':
     unittest.main()
