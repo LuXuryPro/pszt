@@ -36,7 +36,7 @@ class Generation:
 
     def __str__(self):
         s = "\n".join([str(x) for x in self.population])
-        s = "Population: \n" + s
+        s = "\n\n************Population: **************\n" + s + "\n\n"
         return s
 
     def set_destination(self, destination_sum, destination_product):
@@ -94,17 +94,14 @@ class Generation:
     def step(self):
         i = 0
         while (i <
-                self.population[0].get_fitness()*self.number_of_individuals*10 and
+                self.population[0].get_fitness() *
+                self.number_of_individuals*10 and
                 i < (len(self.population) - 1)):
             self.population[random.randint(0,
                 self.number_of_individuals-1)].mutation(0.5,
                         self.bit_probability_table)
             i += 1
 
-        self.get_best()
-        # Get rid of half of the population
-        self.population = self.population[0:self.number_of_individuals]
-        assert(len(self.population) == self.number_of_individuals)
 
         # Crossovers
         i = 0
@@ -118,6 +115,11 @@ class Generation:
             r['b'].mutation(0.01, self.bit_probability_table)
             self.population.append(r['a'])
             self.population.append(r['b'])
+
+        self.get_best()
+        # Get rid of half of the population
+        self.population = self.population[0:self.number_of_individuals]
+        assert(len(self.population) == self.number_of_individuals)
 
 
 class MicrobalGaGeneration(Generation):
