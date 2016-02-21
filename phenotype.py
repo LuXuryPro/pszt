@@ -1,14 +1,14 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-
-import pdb
 import random
 import unittest
 
 
 def prepare_solution(genotype_size):
-    """ Prepare example solution of size genotype_size. Return dict having
-    desired sum and product, which we use as a model we want to achieve.
+    """
+    Prepare example solution of size genotype_size. Return dict having desired
+    sum and product, which we use as a model we want to achieve.
+    @param genotype_size: number of bits to randomly shuffle
     Returns dict having two keys:
     - solution_sum
     - solution_product
@@ -32,19 +32,25 @@ def prepare_solution(genotype_size):
 
 
 class Phenotype:
-    """Main class describing our agents. It has genotype vector and all
-    operations which are possible to run on it encapsulated inside itself.
+    """
+    Main class describing our agents. It has genotype vector and all operations
+    which are possible to run on it encapsulated inside itself.
+
+    Init new Phenotype object. If you specify only size it will automatically
+    generate random genotype.
+
+    kwargs Parameters:
+
+    size : int
+        specify size for random genotype vector witch will be created for
+        this Phenotype
+
+    genotype : list
+        if this parameter is specified it must be table containing binary
+        numbers 0,1 at all indices. This table will be used as genotype for
+        this Phenotype. Size parameter will be ignored.
     """
     def __init__(self, **kwargs):
-        """Init new Phenotype object. If you specify only size it will
-        automatically generate random genotype.
-        Parameters:
-        size - specify size for random genotype vector witch will be created
-        for this Phenotype
-        genotype - if this parameter is specified it must be table containing
-        binary numbers 0,1 at all indices. This table will be used as genotype
-        for this Phenotype. Size parameter will be ignored.
-        """
         if "genotype" in kwargs.keys():
             if type(kwargs["genotype"]) != list:
                 raise RuntimeError('Bad argument "genotype". Must be list')
@@ -138,11 +144,14 @@ class Phenotype:
                 'b': Phenotype(genotype=children_b)}
 
     def calc_fitness_function(self, solution_sum, solution_product):
-        """For given parameters calculates how close are we from the best
+        """
+        For given parameters calculates how close are we from the best
         solution. If this function returns 0 we found it. The function is
         defined as:
         f(sum, product) = |solution_sum - sum| + |solution_product - product|
         where |x| is absolute value of number x
+        @param solution_sum: sum of destination agent
+        @param solution_product: product of destination agent
         """
         s = 0
         i = 0
@@ -181,6 +190,7 @@ class TestPhenotypeMethods(unittest.TestCase):
         p = Phenotype(genotype=[1, 0])
         p.calc_fitness_function(1, 2)
         self.assertEqual(p.get_fitness(), 2)
+
 
 if __name__ == '__main__':
     unittest.main()
