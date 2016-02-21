@@ -2,7 +2,6 @@
 # -*- coding: utf-8 -*-
 
 import generation
-import phenotype
 import argparse
 
 parser = argparse.ArgumentParser(
@@ -10,6 +9,7 @@ parser = argparse.ArgumentParser(
 parser.add_argument(
         '--population-size',
         required=True,
+
         type=int)
 
 parser.add_argument(
@@ -50,8 +50,6 @@ for position, value in enumerate(genotype):
         group_b.append(position + 1)
 groups += "Group 1: " + str(group_a) + "\n"
 groups += "Group 2: " + str(group_b) + "\n"
-
-
 
 size = len(genotype)
 if args.algorithm == "s":

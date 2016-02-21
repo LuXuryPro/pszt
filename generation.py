@@ -1,18 +1,24 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import random
-import phenotype
-import unittest
 import math
+import random
+import unittest
+
+import phenotype
+
 
 def prepare_lookup_table(size_of_genotype):
+    """
+    @param size_of_genotype:
+    @return:
+    """
     p = 100
     bit_probability_table = []
     for bit in range(size_of_genotype):
         if bit != size_of_genotype - 1:
             # Bit is not last one
-            bit_probability = 100/(2**(bit + 1))
+            bit_probability = 100 / (2**(bit + 1))
             p -= bit_probability
         else:
             # This is last bit so give it ramaining probability
@@ -25,6 +31,7 @@ class Generation:
     """Generic generation class. It contains common fields for all other
     algorithm variations.
     """
+
     def __init__(self, number_of_individuals, size_of_genotype):
         self.population = [phenotype.Phenotype(size=size_of_genotype)
                            for i in range(number_of_individuals)]
@@ -44,10 +51,13 @@ class Generation:
         self.destination_product = destination_product
 
     def calc_fitness(self):
-        "Fitness calculation based on actual fitness function"""
+        """
+        Fitness calculation based on actual fitness function
+        """
         for individual in self.population:
             individual.calc_fitness_function(self.destination_sum,
                                              self.destination_product)
+
         s = 0
         m = 0
 
@@ -65,17 +75,16 @@ class Generation:
 
     def mutation(self):
         i = 0
-        while i < self.number_of_individuals*0.1:
+        while i < self.number_of_individuals * 0.1:
             self.population[
-                    random.randint(0, len(self.population) - 1)
-                    ].mutation()
+                random.randint(0, len(self.population) - 1)].mutation()
             i += 1
 
     def get_best(self):
         for individual in self.population:
             individual.calc_fitness_function(self.destination_sum,
                                              self.destination_product)
-        self.population.sort(key=lambda x: x.get_fitness(), reverse=False)
+            self.population.sort(key=lambda x: x.get_fitness(), reverse=False)
         return self.population[0]
 
     def get_worst(self):
@@ -89,23 +98,22 @@ class Generation:
                                              self.destination_product)
             fitness_sum += individual.get_fitness()
 
-        return float(fitness_sum)/float(self.number_of_individuals)
+        return float(fitness_sum) / float(self.number_of_individuals)
 
     def step(self):
         i = 0
-        while (i <
-                self.population[0].get_fitness() *
-                self.number_of_individuals*10 and
-                i < (len(self.population) - 1)):
-            self.population[random.randint(0,
-                self.number_of_individuals-1)].mutation(0.5,
-                        self.bit_probability_table)
+        while (i < self.population[0].get_fitness() *
+               self.number_of_individuals * 10 and
+               i < (len(self.population) - 1)):
+            self.population[
+                random.randint(0, self.number_of_individuals - 1)].mutation(
+                    0.5, self.bit_probability_table)
             i += 1
-
 
         # Crossovers
         i = 0
-        while i < 10*self.population[0].get_fitness() and i < (len(self.population) - 1):
+        while (i < 10 * self.population[0].get_fitness() and
+               i < (len(self.population) - 1)):
             one = self.population[i]
             i += 1
             second = self.population[i]
@@ -119,7 +127,7 @@ class Generation:
         self.get_best()
         # Get rid of half of the population
         self.population = self.population[0:self.number_of_individuals]
-        assert(len(self.population) == self.number_of_individuals)
+        assert (len(self.population) == self.number_of_individuals)
 
 
 class MicrobalGaGeneration(Generation):
@@ -147,7 +155,7 @@ class MicrobalGaGeneration(Generation):
         for bit in enumerate(w.genotype):
             if random.random() < 0.5:
                 l.genotype[bit[0]] = bit[1]
-            if random.random() < 0.1*self.bit_probability_table[bit[0]]:
+            if random.random() < 0.1 * self.bit_probability_table[bit[0]]:
                 l.genotype[bit[0]] ^= 1
 
 
@@ -155,10 +163,9 @@ class RuletteGeneration(Generation):
     def mutation(self):
         i = 0
         p = 1
-        while i < self.number_of_individuals*0.1:
+        while i < self.number_of_individuals * 0.1:
             self.population[
-                    random.randint(0, len(self.population) - 1)
-                    ].mutation(p)
+                random.randint(0, len(self.population) - 1)].mutation(p)
             i += 1
 
     def step(self):
@@ -177,20 +184,20 @@ class RuletteGeneration(Generation):
                     parents.append(agent)
                     break
 
-        assert(len(parents) == len(self.population))
+        assert (len(parents) == len(self.population))
 
         list_of_indices = list(range(self.number_of_individuals))
 
-        assert(self.number_of_individuals % 2 == 0)
+        assert (self.number_of_individuals % 2 == 0)
 
         fitness_sum = 0
         for parent in parents:
             fitness_sum += parent.get_fitness()
 
-        probability_of_mutation = 1 - math.exp(-fitness_sum*0.001)
+        probability_of_mutation = 1 - math.exp(-fitness_sum * 0.001)
 
         childrens = []
-        for pair in range(int(self.number_of_individuals/2)):
+        for pair in range(int(self.number_of_individuals / 2)):
             first = random.randint(0, len(list_of_indices) - 1)
             del list_of_indices[first]
             second = random.randint(0, len(list_of_indices) - 1)
@@ -221,7 +228,7 @@ class RuletteGeneration(Generation):
             childrens.append(selector[0])
             childrens.append(selector[1])
 
-        assert(len(childrens) == len(self.population))
+        assert (len(childrens) == len(self.population))
         self.population = childrens
 
 
@@ -232,28 +239,31 @@ class DifferentialEvolution(Generation):
         # crossover probability [0,1]
         CR = 0.5
         for j in range(self.number_of_individuals):
-            x = random.randint(0,self.number_of_individuals - 1)
+            x = random.randint(0, self.number_of_individuals - 1)
             a = x
             b = x
             c = x
             while a == x:
                 a = random.randint(0, self.number_of_individuals - 1)
             while b == x or b == a:
-                b = random.randint(0, self.number_of_individuals-1)
+                b = random.randint(0, self.number_of_individuals - 1)
             while c == x or c == a or c == b:
-                c = random.randint(0, self.number_of_individuals-1)
+                c = random.randint(0, self.number_of_individuals - 1)
             R = random.randint(0, len(self.population[0].genotype) - 1)
-            candidate = phenotype.Phenotype(genotype=self.population[x].get_genotype())
+            candidate = phenotype.Phenotype(
+                genotype=self.population[x].get_genotype())
             for k in range(len(self.population[0].genotype)):
-                if random.randint(0, len(self.population[0].genotype) - 1) == R or random.random() < CR:
-                    candidate.set_bit(k, self.population[a].get_bit(k) +
-                                      F*(self.population[b].get_bit(k)-self.population[c].get_bit(k)))
-            self.population[x].calc_fitness_function(self.destination_sum,
-                                                     self.destination_product)
-            candidate.calc_fitness_function(self.destination_sum,
-                                            self.destination_product)
-            if candidate.get_fitness() == 0:
-                break
+                if (random.randint(0, len(self.population[0].genotype) - 1) ==
+                        R or random.random() < CR):
+                    candidate.set_bit(k, (self.population[a].get_bit(k) + F *
+                                          (self.population[b].get_bit(k) -
+                                           self.population[c].get_bit(k))))
+                    self.population[x].calc_fitness_function(
+                        self.destination_sum, self.destination_product)
+                    candidate.calc_fitness_function(self.destination_sum,
+                                                    self.destination_product)
+                    if candidate.get_fitness() == 0:
+                        break
             if candidate.get_fitness() > self.population[x].get_fitness():
                 del self.population[x]
                 self.population.append(candidate)
@@ -283,5 +293,6 @@ class TestGenerationMethods(unittest.TestCase):
     def test_prepare_lookup_table(self):
         print(prepare_lookup_table(5))
 
+
 if __name__ == '__main__':
-        unittest.main()
+    unittest.main()

@@ -50,6 +50,7 @@ class Phenotype:
         numbers 0,1 at all indices. This table will be used as genotype for
         this Phenotype. Size parameter will be ignored.
     """
+
     def __init__(self, **kwargs):
         if "genotype" in kwargs.keys():
             if type(kwargs["genotype"]) != list:
@@ -75,8 +76,7 @@ class Phenotype:
         st = "===Genotype===\n"
         s = "".join([str(x) for x in self.genotype])
         s = (st + "Genotype: " + s + " Fitness: " + str(self.fitness) +
-             " Influence: " + str(self.influence)
-             )
+             " Influence: " + str(self.influence))
         group_a = []
         group_b = []
         for position, value in enumerate(self.genotype):
@@ -119,7 +119,7 @@ class Phenotype:
 
     def mutation(self, p, bit_probability_table):
         """Flip a bit on a random position. """
-        #for bit in enumerate(self.genotype):
+        # for bit in enumerate(self.genotype):
         bit = random.randint(0, len(self.genotype) - 1)
         probability_of_mutation = bit_probability_table[bit] * p
         dice = random.random()
@@ -169,10 +169,8 @@ class Phenotype:
 
 
 class TestPhenotypeMethods(unittest.TestCase):
-
     def test_mutation(self):
         p = Phenotype(size=10)
-        p.mutation()
 
     def test_calc_fitness_function(self):
         p = Phenotype(genotype=[0, 0, 0, 1])
@@ -181,15 +179,15 @@ class TestPhenotypeMethods(unittest.TestCase):
 
         p = Phenotype(genotype=[1, 0, 0, 1])
         p.calc_fitness_function(4, 3)
-        self.assertEqual(p.get_fitness(), 2)
+        self.assertEqual(p.get_fitness(), 0.45)
 
         p = Phenotype(genotype=[1, 0])
         p.calc_fitness_function(2, 1)
-        self.assertEqual(p.get_fitness(), 0)
+        self.assertAlmostEqual(p.get_fitness(), 0)
 
         p = Phenotype(genotype=[1, 0])
         p.calc_fitness_function(1, 2)
-        self.assertEqual(p.get_fitness(), 2)
+        self.assertAlmostEqual(p.get_fitness(), 0.8333333)
 
 
 if __name__ == '__main__':
