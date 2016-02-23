@@ -45,6 +45,7 @@ class Phenotype:
     """Main class describling our agents. It has genotype vector and all
     operations witch are possible to run on it encapsulated inside itself.
     """
+
     def __init__(self, **kwargs):
         """Init new Phenotype object. If you specify only size it will
         automatically generate random genotype.
@@ -104,7 +105,7 @@ class Phenotype:
     def calc_influence(self, s, maximum, i):
         """Instead of killing agent with the lowest fittest we use this formula.
         It is improving speed of finding the best solution"""
-        self.influence = (maximum - self.fitness + 1)/(i * (maximum + 1) - s)
+        self.influence = (maximum - self.fitness + 1) / (i * (maximum + 1) - s)
 
     def mutation(self):
         """Flip a bit on a random position. """
@@ -125,7 +126,8 @@ class Phenotype:
                 children_b.append(self.genotype[x])
                 children_a.append(other.genotype[x])
 
-        return {'a': Phenotype(genotype=children_a), 'b': Phenotype(genotype=children_b)}
+        return {'a': Phenotype(genotype=children_a),
+                'b': Phenotype(genotype=children_b)}
 
     def calc_fitness_function(self, solution_sum, solution_product):
         """For given parameters calculates how close are we from the best
@@ -144,8 +146,7 @@ class Phenotype:
                     i = 1
                 i *= (x + 1)
 
-        self.fitness = (abs(solution_sum-s) + abs(solution_product-i))
-
+        self.fitness = (abs(solution_sum - s) + abs(solution_product - i))
 
 # normal algorithm
 for solution_size in range(args.problem_size, args.problem_size + 1):
@@ -156,7 +157,8 @@ for solution_size in range(args.problem_size, args.problem_size + 1):
     for population_size in range(args.population_size,
                                  args.population_size + 1):
         # TODO: zrobic parser argumentow
-        population = [Phenotype(size=solution_size) for x in range(population_size)]
+        population = [Phenotype(size=solution_size)
+                      for x in range(population_size)]
         j = 0
         while 1:
             for x in population:
@@ -177,28 +179,29 @@ for solution_size in range(args.problem_size, args.problem_size + 1):
 
             population.sort(key=lambda x: x.get_fitness(), reverse=False)
 
-            print(str(solution_size) + "\t" + str(population_size) + "\t" + str(j) + "\t" + str(population[0]))
+            print(str(solution_size) + "\t" + str(population_size) + "\t" +
+                  str(j) + "\t" + str(population[0]))
             if population[0].get_fitness() == 0:  # We found the best solution
                 break
 
             # Mutation
             i = 0
-            while (i < population[0].get_fitness()*population_size/5 and
+            while (i < population[0].get_fitness() * population_size / 5 and
                    i < (len(population) - 1)):
-                population[random.randint(0, population_size-1)].mutation()
+                population[random.randint(0, population_size - 1)].mutation()
                 i += 1
 
             # Get rid of half of the population
             population = population[0:population_size]
-            print (population)
+            print(population)
             #print (population)
             #print (str(j) +  ": " + str(population[0].get_influence()) + " " + str(population[0].get_fitness()))
             #input("Press Enter to continue...")
 
-
             # Crossovers
             i = 0
-            while i < population[0].get_fitness() and i < (len(population) - 1):
+            while i < population[0].get_fitness() and i < (
+                    len(population) - 1):
                 one = population[i]
                 i += 1
                 second = population[i]
@@ -214,38 +217,44 @@ for solution_size in range(args.problem_size, args.problem_size + 1):
         #print ("Ilosc genow: " + str(solution_size) + " Wielkosc populacji: " + str(population_size) + " => Rozwiazanie: po " + str(j) + " iteracjach" +  ": " + str(population[0]))
 
 
-#differential evolution algorithm
+        #differential evolution algorithm
 def differential_evolution_algorith():
-    for solution_size in range(1,20):
+    for solution_size in range(1, 20):
         solution = prepare_solution(solution_size)
         #differential weight [0,2]
-        F=1
+        F = 1
         #crossover probability [0,1]
-        CR=0.5
+        CR = 0.5
         #IMPORTANT population min size needs to be 4 agents
-        for population_size in range(4,20):
-            population = [Phenotype(solution_size) for x in range(population_size)]
+        for population_size in range(4, 20):
+            population = [Phenotype(solution_size)
+                          for x in range(population_size)]
             v = 0
             for l in range(100):
                 v += 1
                 for j in range(population_size):
-                    x = random.randint(0,population_size - 1)
+                    x = random.randint(0, population_size - 1)
                     a = x
                     b = x
                     c = x
                     while a == x:
-                        a = random.randint(0,population_size - 1)
+                        a = random.randint(0, population_size - 1)
                     while b == x or b == a:
-                        b = random.randint(0,population_size-1)
+                        b = random.randint(0, population_size - 1)
                     while c == x or c == a or c == b:
-                        c = random.randint(0,population_size-1)
+                        c = random.randint(0, population_size - 1)
                     R = random.randint(0, solution_size - 1)
                     candidate = Phenotype(None, population[x].get_genotype())
                     for k in range(solution_size):
-                        if random.randint(0, solution_size - 1) == R or random.random() < CR:
-                            candidate.set_bit(k, population[a].get_bit(k) + F*(population[b].get_bit(k)-population[c].get_bit(k)))
-                    population[x].calc_fitness_function(solution['s'], solution['i'])
-                    candidate.calc_fitness_function(solution['s'], solution['i'])
+                        if random.randint(0, solution_size -
+                                          1) == R or random.random() < CR:
+                            candidate.set_bit(k, population[a].get_bit(k) + F *
+                                              (population[b].get_bit(k) -
+                                               population[c].get_bit(k)))
+                    population[x].calc_fitness_function(solution['s'],
+                                                        solution['i'])
+                    candidate.calc_fitness_function(solution['s'],
+                                                    solution['i'])
                     if candidate.get_fitness() == 0:
                         break
                     if candidate.get_fitness() > population[x].get_fitness():
@@ -259,7 +268,8 @@ def differential_evolution_algorith():
 
                 #if c is valid solution
                 if best_solution.get_fitness() == 0:
-                    print (str(solution_size) + "\t" + str(population_size) + "\t" + str(v))
+                    print(str(solution_size) + "\t" + str(population_size) +
+                          "\t" + str(v))
                     break
                 #else:
-                    #print (str(solution_size) + "\t" + str(population_size) + "\t" + str(l) + "\t" + str(best_solution))
+                #print (str(solution_size) + "\t" + str(population_size) + "\t" + str(l) + "\t" + str(best_solution))

@@ -56,7 +56,7 @@ class Phenotype:
             if type(kwargs["genotype"]) != list:
                 raise RuntimeError('Bad argument "genotype". Must be list')
             for i in kwargs["genotype"]:
-                if not (i != 0 or i != 1):
+                if not (i == 0 or i == 1):
                     raise RuntimeError('Bad "argument" genotype. '
                                        "Not a binary list")
             self.genotype = kwargs["genotype"]

@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-
 import math
 import random
 import unittest
@@ -14,7 +13,7 @@ def prepare_lookup_table(size_of_genotype):
     @return:
     """
     p = 100
-    bit_probability_table = []
+    bits_probability_table = []
     for bit in range(size_of_genotype):
         if bit != size_of_genotype - 1:
             # Bit is not last one
@@ -23,8 +22,8 @@ def prepare_lookup_table(size_of_genotype):
         else:
             # This is last bit so give it ramaining probability
             bit_probability = p
-        bit_probability_table.append(bit_probability)
-    return bit_probability_table
+        bits_probability_table.append(bit_probability)
+    return bits_probability_table
 
 
 class Generation:
@@ -65,6 +64,7 @@ class Generation:
         # in calc_influence
         for agent in self.population:
             s += agent.get_fitness()
+            agent.get_fitness()
             if m < agent.get_fitness():
                 m = agent.get_fitness()
 
@@ -131,6 +131,7 @@ class Generation:
 
 
 class MicrobalGaGeneration(Generation):
+
     def step(self):
         """Do one step of generation including mutations, crossovers, and
         selection.
@@ -160,6 +161,7 @@ class MicrobalGaGeneration(Generation):
 
 
 class RuletteGeneration(Generation):
+
     def mutation(self):
         i = 0
         p = 1
@@ -233,6 +235,7 @@ class RuletteGeneration(Generation):
 
 
 class DifferentialEvolution(Generation):
+
     def step(self):
         # differential weight [0,2]
         F = 1
@@ -270,6 +273,7 @@ class DifferentialEvolution(Generation):
 
 
 class TestGenerationMethods(unittest.TestCase):
+
     def test_get_best(self):
         g = Generation(4, 2)
         g.set_destination(3, 0)  # 00 bits
