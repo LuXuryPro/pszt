@@ -297,6 +297,10 @@ class TestGenerationMethods(unittest.TestCase):
     def test_prepare_lookup_table(self):
         print(prepare_lookup_table(5))
 
+    def test_generation_str_operator(self):
+        g = Generation(10, 10)
+        strg = str(g)
+
 
 if __name__ == '__main__':
     unittest.main()
