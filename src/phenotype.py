@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 import random
 import unittest
+from unittest import mock
 
 
 def prepare_solution(genotype_size):
@@ -19,7 +20,7 @@ def prepare_solution(genotype_size):
     for i in range(len(genotype)):
         if genotype[i] == 0:
             solution_sum += (i + 1)
-        elif genotype[i] == 1:
+        else:
             if solution_product == 0:
                 solution_product = 1
             solution_product *= (i + 1)
@@ -82,7 +83,7 @@ class Phenotype:
         for position, value in enumerate(self.genotype):
             if value == 0:
                 group_a.append(position + 1)
-            elif value == 1:
+            else:
                 group_b.append(position + 1)
         s += "\n"
         s += "Group 1: " + str(group_a) + "\n"
@@ -158,7 +159,7 @@ class Phenotype:
         for x in range(len(self.genotype)):
             if self.genotype[x] == 0:
                 s += (x + 1)
-            elif self.genotype[x] == 1:
+            else:
                 if i == 0:
                     i = 1
                 i *= (x + 1)
@@ -169,9 +170,6 @@ class Phenotype:
 
 
 class TestPhenotypeMethods(unittest.TestCase):
-    def test_mutation(self):
-        p = Phenotype(size=10)
-
     def test_calc_fitness_function(self):
         p = Phenotype(genotype=[0, 0, 0, 1])
         p.calc_fitness_function(6, 4)
@@ -189,6 +187,38 @@ class TestPhenotypeMethods(unittest.TestCase):
         p.calc_fitness_function(1, 2)
         self.assertAlmostEqual(p.get_fitness(), 0.8333333)
 
+    def test_prepare_solution(self):
+        prepare_solution(10)
+
+    @mock.patch('random.randint')
+    @mock.patch('random.random')
+    def test_mutation(self, mock_random, mock_randint):
+        mock_random.return_value = 0
+        mock_randint.return_value = 0
+        p = Phenotype(genotype=[1, 1, 1])
+        p.mutation(1, [1, 1, 1])
+        self.assertEqual(p.get_genotype(), [0, 1, 1])
+
+    @mock.patch('random.randint')
+    def test_crossover(self, mock_randint):
+        mock_randint.return_value = 1  # split 2 element list in half
+        mother = Phenotype(genotype=[1, 1])
+        father = Phenotype(genotype=[0, 0])
+        children = mother.crossover(father)
+        self.assertEqual(children['a'].get_genotype(), [1, 0])
+        self.assertEqual(children['b'].get_genotype(), [0, 1])
+
+    def test_constructor(self):
+        self.assertRaises(RuntimeError, Phenotype, genotype=1)
+        self.assertRaises(RuntimeError, Phenotype, genotype=[2, 3])
+        self.assertRaises(RuntimeError, Phenotype, size=[])
+        self.assertRaises(RuntimeError, Phenotype)
+        p = Phenotype(size=10)
+        self.assertEqual(len(p.get_genotype()), 10)
+
+    def test_phenotype_str_operator(self):
+        g = Phenotype(genotype=[1, 0, 1, 0])
+        gstr = str(g)
 
 if __name__ == '__main__':
     unittest.main()

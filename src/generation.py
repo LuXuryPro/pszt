@@ -286,7 +286,7 @@ class TestGenerationMethods(unittest.TestCase):
         self.assertEqual(best, selected_best)
 
     def test_get_avg_fitness(self):
-        g = Generation(4, 2)
+        g = Generation(4, 2)  # 4 individuals 2 bits per each
         g.set_destination(3, 0)  # 00 bits
         g.population[0].genotype = [0, 0]
         g.population[1].genotype = [0, 0]
@@ -300,6 +300,10 @@ class TestGenerationMethods(unittest.TestCase):
     def test_generation_str_operator(self):
         g = Generation(10, 10)
         strg = str(g)
+
+    def test_calc_fitness(self):
+        g = Generation(10, 10)
+        g.calc_fitness()
 
 
 if __name__ == '__main__':
